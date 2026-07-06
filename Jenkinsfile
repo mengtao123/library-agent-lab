@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         POLICY_K = '3'
+        // 设置 Anaconda 路径
+        PATH = "D:\\anaconda;D:\\anaconda\\Scripts;${env.PATH}"
     }
 
     stages {
@@ -17,7 +19,7 @@ pipeline {
         stage('安装依赖') {
             steps {
                 echo '📦 安装依赖...'
-                bat 'pip install numpy requests'
+                bat '"D:\\anaconda\\Scripts\\pip.exe" install numpy requests'
                 echo '✅ 依赖安装完成'
             }
         }
@@ -25,7 +27,7 @@ pipeline {
         stage('运行评测') {
             steps {
                 echo '🧪 运行评测...'
-                bat 'python -c "from infrastructure.evaluate import run_eval; run_eval()"'
+                bat '"D:\\anaconda\\python.exe" -c "from infrastructure.evaluate import run_eval; run_eval()"'
                 echo '✅ 评测通过'
             }
         }

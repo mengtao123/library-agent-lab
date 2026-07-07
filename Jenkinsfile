@@ -38,18 +38,18 @@ pipeline {
         }
 
         stage('构建 Docker 镜像') {
-    steps {
-        echo '🐳 构建 Docker 镜像...'
-        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -f D:\\Github\\library-agent-lab\\Dockerfile -t library-agent:latest D:\\Github\\library-agent-lab'
-        echo '✅ Docker 镜像构建完成'
-    }
-}
+            steps {
+                echo '🐳 构建 Docker 镜像...'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -f D:\\Github\\library-agent-lab\\Dockerfile -t library-agent:latest D:\\Github\\library-agent-lab'
+                echo '✅ Docker 镜像构建完成'
+            }
+        }
 
         stage('部署服务') {
             steps {
                 echo '🚀 启动 Docker 容器...'
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose down'
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose up -d'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose -f D:\\Github\\library-agent-lab\\docker-compose.yml down'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose -f D:\\Github\\library-agent-lab\\docker-compose.yml up -d'
                 echo '✅ 部署完成，服务已启动'
             }
         }

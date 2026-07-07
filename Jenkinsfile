@@ -5,6 +5,7 @@ pipeline {
         POLICY_K = '3'
         PYTHONIOENCODING = 'utf-8'
         PATH = "D:\\anaconda;D:\\anaconda\\Scripts;${env.PATH}"
+        PYTHONPATH = "${env.WORKSPACE}"
     }
 
     stages {
@@ -27,14 +28,14 @@ pipeline {
         stage('运行评测') {
             steps {
                 echo '🧪 启动微服务并运行评测...'
-                // 后台启动三个微服务
-                bat 'start /B D:\\anaconda\\python.exe application/services/reader_service.py'
-                bat 'start /B D:\\anaconda\\python.exe application/services/book_service.py'
-                bat 'start /B D:\\anaconda\\python.exe application/services/record_service.py'
+                // 设置 PYTHONPATH 并启动微服务
+                bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/reader_service.py'
+                bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/book_service.py'
+                bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/record_service.py'
                 // 等待微服务启动
-                bat 'timeout /t 3'
+                bat 'ping 127.0.0.1 -n 4 > nul'
                 // 运行评测
-                bat 'chcp 65001 && D:\\anaconda\\python.exe -c "from infrastructure.evaluate import run_eval; run_eval()"'
+                bat 'set PYTHONPATH=%WORKSPACE% && chcp 65001 && D:\\anaconda\\python.exe -c "from infrastructure.evaluate import run_eval; run_eval()"'
                 echo '✅ 评测通过'
             }
         }

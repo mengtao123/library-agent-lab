@@ -38,12 +38,12 @@ pipeline {
         }
 
         stage('构建 Docker 镜像') {
-            steps {
-                echo '🐳 构建 Docker 镜像...'
-                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t library-agent:latest .'
-                echo '✅ Docker 镜像构建完成'
-            }
-        }
+    steps {
+        echo '🐳 构建 Docker 镜像...'
+        bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -f D:\\Github\\library-agent-lab\\Dockerfile -t library-agent:latest D:\\Github\\library-agent-lab'
+        echo '✅ Docker 镜像构建完成'
+    }
+}
 
         stage('部署服务') {
             steps {

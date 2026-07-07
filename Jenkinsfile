@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         POLICY_K = '3'
-        // 设置 Anaconda 路径
+        PYTHONIOENCODING = 'utf-8'
         PATH = "D:\\anaconda;D:\\anaconda\\Scripts;${env.PATH}"
     }
 
@@ -27,7 +27,7 @@ pipeline {
         stage('运行评测') {
             steps {
                 echo '🧪 运行评测...'
-                bat '"D:\\anaconda\\python.exe" -c "from infrastructure.evaluate import run_eval; run_eval()"'
+                bat 'chcp 65001 && "D:\\anaconda\\python.exe" -c "from infrastructure.evaluate import run_eval; run_eval()"'
                 echo '✅ 评测通过'
             }
         }

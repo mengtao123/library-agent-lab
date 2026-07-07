@@ -28,13 +28,10 @@ pipeline {
         stage('运行评测') {
             steps {
                 echo '🧪 启动微服务并运行评测...'
-                // 设置 PYTHONPATH 并启动微服务
                 bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/reader_service.py'
                 bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/book_service.py'
                 bat 'set PYTHONPATH=%WORKSPACE% && start /B D:\\anaconda\\python.exe application/services/record_service.py'
-                // 等待微服务启动
                 bat 'ping 127.0.0.1 -n 4 > nul'
-                // 运行评测
                 bat 'set PYTHONPATH=%WORKSPACE% && chcp 65001 && D:\\anaconda\\python.exe -c "from infrastructure.evaluate import run_eval; run_eval()"'
                 echo '✅ 评测通过'
             }
@@ -45,6 +42,15 @@ pipeline {
                 echo '🐳 构建 Docker 镜像...'
                 bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" build -t library-agent:latest .'
                 echo '✅ Docker 镜像构建完成'
+            }
+        }
+
+        stage('部署服务') {
+            steps {
+                echo '🚀 启动 Docker 容器...'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose down'
+                bat '"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe" compose up -d'
+                echo '✅ 部署完成，服务已启动'
             }
         }
     }

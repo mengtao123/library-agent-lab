@@ -40,6 +40,7 @@ print(">>> 微服务已就绪: 读者(8001) 书籍(8002) 借阅记录(8003)")
 # ---- 2. 业务依赖(在微服务起来后再导入) ----
 from application.app import serve_struct
 from domain.memory.memory import Memory
+from infrastructure.metrics import get_metrics
 
 SESSIONS = {}  # user_id -> Memory(每个用户一份会话记忆)
 
@@ -61,30 +62,62 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
     def do_GET(self):
+        start = time.time()
+        
+        # /metrics 路由
+        if self.path == "/metrics":
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(get_metrics())
+            return
+
         path = "index.html" if self.path in ("/", "") else self.path.lstrip("/")
         fp = os.path.join(WEB_DIR, os.path.basename(path))
         if os.path.isfile(fp):
             ctype = "text/html; charset=utf-8" if fp.endswith(".html") else "text/plain; charset=utf-8"
             with open(fp, "rb") as f:
-                return self._send(200, f.read(), ctype)
-        self._send(404, {"error": "not found"})
+                self._send(200, f.read(), ctype)
+        else:
+            self._send(404, {"error": "not found"})
+        
+        duration = time.time() - start
+        from infrastructure.metrics import track_request
+        track_request('app', 'GET', self.path, duration)
 
     def do_POST(self):
+        start = time.time()
+        
         if self.path != "/api/chat":
+            duration = time.time() - start
+            from infrastructure.metrics import track_request
+            track_request('app', 'POST', self.path, duration)
             return self._send(404, {"error": "unknown api"})
+        
         n = int(self.headers.get("Content-Length", 0))
         try:
             req = json.loads(self.rfile.read(n) or "{}")
         except Exception:
+            duration = time.time() - start
+            from infrastructure.metrics import track_request
+            track_request('app', 'POST', self.path, duration)
             return self._send(400, {"error": "bad json"})
 
         uid = req.get("user_id", "u001")
         msg = (req.get("message") or "").strip()
         if not msg:
+            duration = time.time() - start
+            from infrastructure.metrics import track_request
+            track_request('app', 'POST', self.path, duration)
             return self._send(400, {"error": "empty message"})
 
         mem = SESSIONS.setdefault(uid, Memory())
         result = serve_struct(uid, msg, memory=mem)
+        
+        duration = time.time() - start
+        from infrastructure.metrics import track_request
+        track_request('app', 'POST', self.path, duration)
+        
         self._send(200, result)
 
 

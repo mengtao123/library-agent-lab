@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  reader-service:
+    build: .
+    command: python application/services/reader_service.py
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+
+  book-service:
+    build: .
+    command: python application/services/book_service.py
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+
+  record-service:
+    build: .
+    command: python application/services/record_service.py
+    ports:
+      - "8003:8003"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+
+  app:
+    build: .
+    command: python server.py
+    ports:
+      - "8000:8000"
+    depends_on:
+      - reader-service
+      - book-service
+      - record-service
+    environment:
+      - READER_URL=http://reader-service:8001
+      - BOOK_URL=http://book-service:8002
+      - RECORD_URL=http://record-service:8003
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
